@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import UIKit
 
 @MainActor
 final class GameStore: ObservableObject {
@@ -46,6 +47,14 @@ final class GameStore: ObservableObject {
     // MARK: - Tournament (virtual score)
     @Published var tournamentScore: Int
     @Published var tournamentBest: Int
+
+    // MARK: - Preferences (Settings)
+    @Published var hapticsEnabled: Bool
+    @Published var defaultTurboEnabled: Bool
+    @Published var confirmMaxBet: Bool
+    @Published var stopAutoOnBigWin: Bool
+    @Published var keepScreenOn: Bool
+    @Published var reduceMotionInGame: Bool
 
     private let defaults = UserDefaults.standard
     private let engine = SlotEngine()
@@ -120,10 +129,27 @@ final class GameStore: ObservableObject {
         tournamentScore = defaults.integer(forKey: keys.tournamentScore)
         tournamentBest = defaults.integer(forKey: keys.tournamentBest)
 
+        hapticsEnabled = defaults.object(forKey: keys.hapticsEnabled) as? Bool ?? true
+        defaultTurboEnabled = defaults.bool(forKey: keys.defaultTurbo)
+        confirmMaxBet = defaults.object(forKey: keys.confirmMaxBet) as? Bool ?? true
+        stopAutoOnBigWin = defaults.object(forKey: keys.stopAutoOnBigWin) as? Bool ?? true
+        keepScreenOn = defaults.bool(forKey: keys.keepScreenOn)
+        reduceMotionInGame = defaults.bool(forKey: keys.reduceMotion)
+
         refreshDailyState()
         bumpMission(id: "login", by: 1)
         checkAchievements()
         persist()
+        applyIdleTimerPreference()
+    }
+
+    func savePreferences() {
+        persist()
+        applyIdleTimerPreference()
+    }
+
+    func applyIdleTimerPreference() {
+        UIApplication.shared.isIdleTimerDisabled = keepScreenOn
     }
 
     // MARK: - Daily timers
@@ -360,13 +386,43 @@ final class GameStore: ObservableObject {
         persist()
     }
 
-    func resetProgressForDebug() {
+    /// Clears local player progress only. Preferences in Settings are kept.
+    func resetLocalProgress() {
         coins = Self.startingCoins
-        totalSpins = 0
-        biggestWin = 0
         level = 1
         xp = 0
         xpToNext = 1_000
+        isVIP = false
+
+        totalSpins = 0
+        biggestWin = 0
+        currentStreakDays = 1
+        lastPlayDayKey = ""
+
+        jackpotGrand = 250_000_000
+        jackpotMajor = 50_000_000
+        jackpotMinor = 10_000_000
+        jackpotMini = 2_000_000
+
+        loginDay = 1
+        claimedLoginDays = []
+        lastLoginClaimDate = nil
+        dailyBonusAvailable = true
+        lastDailyBonusDate = nil
+
+        missionProgress = [:]
+        claimedMissions = []
+        missionDayKey = ""
+
+        achievementProgress = [:]
+        unlockedAchievements = []
+        collection = ["glove": 0, "crown": 0, "seven": 0, "chest": 0]
+
+        tournamentScore = 0
+        tournamentBest = 0
+
+        refreshDailyState()
+        bumpMission(id: "login", by: 1)
         persist()
     }
 
@@ -400,6 +456,13 @@ final class GameStore: ObservableObject {
         defaults.set(collection, forKey: keys.collection)
         defaults.set(tournamentScore, forKey: keys.tournamentScore)
         defaults.set(tournamentBest, forKey: keys.tournamentBest)
+
+        defaults.set(hapticsEnabled, forKey: keys.hapticsEnabled)
+        defaults.set(defaultTurboEnabled, forKey: keys.defaultTurbo)
+        defaults.set(confirmMaxBet, forKey: keys.confirmMaxBet)
+        defaults.set(stopAutoOnBigWin, forKey: keys.stopAutoOnBigWin)
+        defaults.set(keepScreenOn, forKey: keys.keepScreenOn)
+        defaults.set(reduceMotionInGame, forKey: keys.reduceMotion)
     }
 
     private func dayKey(_ date: Date) -> String {
@@ -458,4 +521,10 @@ private enum StorageKeys {
     static let collection = "kr.collect"
     static let tournamentScore = "kr.tScore"
     static let tournamentBest = "kr.tBest"
+    static let hapticsEnabled = "kr.pref.haptics"
+    static let defaultTurbo = "kr.pref.turbo"
+    static let confirmMaxBet = "kr.pref.confirmMax"
+    static let stopAutoOnBigWin = "kr.pref.stopBigWin"
+    static let keepScreenOn = "kr.pref.keepAwake"
+    static let reduceMotion = "kr.pref.reduceMotion"
 }

@@ -17,9 +17,12 @@ struct SlotGameView: View {
     @State private var showBigWin = false
     @State private var highlightPayline = false
     @State private var turbo = false
+    @State private var showMaxBetConfirm = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
 
     private let spinColumns = 3
+    private var motionReduced: Bool { store.reduceMotionInGame || systemReduceMotion }
 
     var body: some View {
         GeometryReader { geo in
@@ -74,6 +77,7 @@ struct SlotGameView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .onAppear {
+            turbo = store.defaultTurboEnabled
             if bet == 0 {
                 bet = min(max(arena.defaultBet, arena.minBet), arena.maxBet)
                 bet = min(bet, store.coins)
@@ -83,6 +87,16 @@ struct SlotGameView: View {
         .onChange(of: autoSpin) { _, enabled in
             if enabled { Task { await runAutoSpinLoop() } }
         }
+        .alert("Max Bet?", isPresented: $showMaxBetConfirm) {
+            Button("Set Max Bet") { applyMaxBet() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Set your total bet to \(CoinFormat.string(min(arena.maxBet, store.coins))) virtual coins?")
+        }
+    }
+
+    private func applyMaxBet() {
+        bet = min(arena.maxBet, store.coins)
     }
 
     private struct LayoutMetrics {
@@ -153,13 +167,15 @@ struct SlotGameView: View {
                                     highlighted: highlightPayline && row == 1
                                 )
                                 .rotation3DEffect(
-                                    .degrees(isSpinning ? 360 : 0),
+                                    .degrees(!motionReduced && isSpinning ? 360 : 0),
                                     axis: (x: 1, y: 0, z: 0)
                                 )
                                 .animation(
-                                    isSpinning
-                                        ? .linear(duration: turbo ? 0.15 : 0.35).repeatCount(turbo ? 2 : 4, autoreverses: false)
-                                        : .easeOut(duration: 0.25),
+                                    motionReduced
+                                        ? nil
+                                        : (isSpinning
+                                            ? .linear(duration: turbo ? 0.15 : 0.35).repeatCount(turbo ? 2 : 4, autoreverses: false)
+                                            : .easeOut(duration: 0.25)),
                                     value: isSpinning
                                 )
                             }
@@ -221,7 +237,11 @@ struct SlotGameView: View {
                     )
 
                     miniAction("MAX", icon: "bitcoinsign.circle.fill") {
-                        bet = min(arena.maxBet, store.coins)
+                        if store.confirmMaxBet {
+                            showMaxBetConfirm = true
+                        } else {
+                            applyMaxBet()
+                        }
                     }
                 }
             }
@@ -339,7 +359,13 @@ struct SlotGameView: View {
             lastMessage = result.description
             highlightPayline = result.winAmount > 0
             showBigWin = result.isBigWin
-            UIImpactFeedbackGenerator(style: result.isBigWin ? .heavy : .light).impactOccurred()
+            if store.hapticsEnabled {
+                UIImpactFeedbackGenerator(style: result.isBigWin ? .heavy : .light).impactOccurred()
+            }
+            if result.isBigWin && store.stopAutoOnBigWin {
+                autoSpin = false
+                lastMessage = "\(result.description) · AUTO STOPPED"
+            }
         }
 
         isSpinning = false
