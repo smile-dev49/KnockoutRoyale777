@@ -110,10 +110,12 @@ final class GameStore: ObservableObject {
 
         achievementProgress = Self.intDictionary(defaults.dictionary(forKey: keys.achProgress))
         unlockedAchievements = Set(defaults.array(forKey: keys.achUnlocked) as? [String] ?? [])
-        collection = Self.intDictionary(defaults.dictionary(forKey: keys.collection))
-        if collection.isEmpty {
-            collection = ["glove": 0, "crown": 0, "seven": 0, "chest": 0]
+
+        var loadedCollection = Self.intDictionary(defaults.dictionary(forKey: keys.collection))
+        if loadedCollection.isEmpty {
+            loadedCollection = ["glove": 0, "crown": 0, "seven": 0, "chest": 0]
         }
+        collection = loadedCollection
 
         tournamentScore = defaults.integer(forKey: keys.tournamentScore)
         tournamentBest = defaults.integer(forKey: keys.tournamentBest)
