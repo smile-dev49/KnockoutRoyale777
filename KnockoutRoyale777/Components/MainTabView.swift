@@ -14,7 +14,7 @@ struct MainTabView: View {
 
     var body: some View {
         ZStack {
-            AppTheme.backgroundGradient.ignoresSafeArea()
+            AppBackgroundView()
 
             Group {
                 switch tab {

@@ -48,6 +48,28 @@ enum AppTheme {
     }
 }
 
+/// Shared full-bleed art used across Splash, Home, Game, Settings, and other screens.
+struct AppBackgroundView: View {
+    var body: some View {
+        GeometryReader { geo in
+            Image("AppBackground")
+                .resizable()
+                .scaledToFill()
+                .frame(width: geo.size.width, height: geo.size.height)
+                .clipped()
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+    }
+}
+
+extension View {
+    /// Pins the shared app art behind any screen (Home, Splash, Game, Settings, etc.).
+    func appScreenBackground() -> some View {
+        background { AppBackgroundView() }
+    }
+}
+
 struct GoldStroke: ViewModifier {
     var cornerRadius: CGFloat = 16
     var lineWidth: CGFloat = 1.5

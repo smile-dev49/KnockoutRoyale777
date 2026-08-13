@@ -94,12 +94,7 @@ struct SettingsView: View {
                 }
                 .padding(.horizontal, 18)
             }
-            .background {
-                Image("SettingsBackground")
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea()
-            }
+            .appScreenBackground()
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .navigationTitle("Settings")

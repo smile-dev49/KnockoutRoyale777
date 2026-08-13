@@ -34,7 +34,7 @@ struct ProfileView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 28)
         }
-        .background(Color.clear)
+        .appScreenBackground()
         .toolbar(.hidden, for: .navigationBar)
         .alert("Edit Name", isPresented: $editingName) {
             TextField("Name", text: $nameDraft)

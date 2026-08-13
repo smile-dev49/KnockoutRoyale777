@@ -44,7 +44,7 @@ struct RewardsView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 28)
         }
-        .background(Color.clear)
+        .appScreenBackground()
         .toolbar(.hidden, for: .navigationBar)
     }
 

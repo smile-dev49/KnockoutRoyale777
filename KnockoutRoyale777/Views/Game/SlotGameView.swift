@@ -57,7 +57,7 @@ struct SlotGameView: View {
             }
             .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
         }
-        .background(Color.clear)
+        .appScreenBackground()
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {

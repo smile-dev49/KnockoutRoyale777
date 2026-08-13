@@ -10,6 +10,9 @@ struct HomeView: View {
             VStack(spacing: 18) {
                 TopBarView(onSettings: onSettings)
 
+                // Leave room for the shared background's gloves / 777 artwork.
+                Color.clear.frame(height: 168)
+
                 heroBlock
 
                 GoldButton(title: "★  PLAY  ★") {
@@ -27,67 +30,22 @@ struct HomeView: View {
             }
             .padding(.bottom, 24)
         }
-        .background(Color.clear)
+        .appScreenBackground()
         .toolbar(.hidden, for: .navigationBar)
     }
 
     private var heroBlock: some View {
-        ZStack {
-            Circle()
-                .fill(AppTheme.purpleGlow.opacity(0.35))
-                .frame(width: 260, height: 260)
-                .blur(radius: 40)
+        VStack(spacing: 8) {
+            Text("KNOCKOUT ROYALE")
+                .font(.system(size: 28, weight: .black, design: .serif))
+                .foregroundStyle(AppTheme.goldGradient)
+                .shadow(color: AppTheme.gold.opacity(0.45), radius: 8)
 
-            VStack(spacing: 10) {
-                HStack(spacing: -8) {
-                    Image(systemName: "hand.raised.fill")
-                        .font(.system(size: 54))
-                        .foregroundStyle(AppTheme.ruby)
-                        .rotationEffect(.degrees(-25))
-                        .shadow(color: AppTheme.ruby.opacity(0.6), radius: 12)
-                    Image(systemName: "sparkle")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(AppTheme.goldLight)
-                        .offset(y: -10)
-                    Image(systemName: "hand.raised.fill")
-                        .font(.system(size: 54))
-                        .foregroundStyle(Color.black)
-                        .rotationEffect(.degrees(25))
-                        .shadow(color: AppTheme.gold.opacity(0.5), radius: 12)
-                }
-
-                HStack(spacing: 6) {
-                    ForEach(0..<3, id: \.self) { _ in
-                        Text("7")
-                            .font(.system(size: 28, weight: .black, design: .rounded))
-                            .foregroundStyle(AppTheme.ruby)
-                            .padding(8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(AppTheme.gold.opacity(0.2))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(AppTheme.gold, lineWidth: 1.5)
-                                    )
-                            )
-                    }
-                }
-
-                Text("KNOCKOUT")
-                    .font(.system(size: 36, weight: .black, design: .serif))
-                    .foregroundStyle(AppTheme.goldGradient)
-                    .shadow(color: AppTheme.gold.opacity(0.5), radius: 8)
-
-                Text("ROYALE  777")
-                    .font(.system(size: 18, weight: .bold, design: .serif))
-                    .foregroundStyle(AppTheme.goldLight)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 6)
-                    .background(Capsule().fill(AppTheme.ruby.opacity(0.85)))
-                    .overlay(Capsule().stroke(AppTheme.gold, lineWidth: 1))
-            }
-            .padding(.vertical, 12)
+            Text("Virtual slots · Entertainment only")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(AppTheme.textSecondary)
         }
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity)
     }
 
