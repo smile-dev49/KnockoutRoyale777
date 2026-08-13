@@ -13,7 +13,7 @@ struct MainTabView: View {
     @State private var path = NavigationPath()
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             AppTheme.backgroundGradient.ignoresSafeArea()
 
             Group {
@@ -41,8 +41,8 @@ struct MainTabView: View {
                     }
                 }
             }
-            .padding(.bottom, 64)
-
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(spacing: 0) {
                 DisclaimerBanner()
                 CustomTabBar(tab: $tab)

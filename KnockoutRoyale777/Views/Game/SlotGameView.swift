@@ -22,84 +22,37 @@ struct SlotGameView: View {
     private let spinColumns = 3
 
     var body: some View {
-        VStack(spacing: 10) {
-            TopBarView()
+        GeometryReader { geo in
+            let metrics = LayoutMetrics(size: geo.size)
 
-            jackpotStrip
+            VStack(spacing: metrics.spacing) {
+                TopBarView()
 
-            ZStack {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(AppTheme.panel)
-                    .goldStroke(cornerRadius: 18, lineWidth: 2)
+                jackpotStrip
 
-                VStack(spacing: 8) {
-                    if showBigWin {
-                        Text("BIG WIN")
-                            .font(.system(size: 22, weight: .black, design: .serif))
-                            .foregroundStyle(AppTheme.goldGradient)
-                            .shadow(color: AppTheme.gold.opacity(0.7), radius: 8)
-                            .transition(.scale.combined(with: .opacity))
-                    }
+                reelBoard(height: metrics.reelHeight)
 
-                    HStack(spacing: 8) {
-                        ForEach(0..<spinColumns, id: \.self) { col in
-                            VStack(spacing: 6) {
-                                ForEach(0..<3, id: \.self) { row in
-                                    SymbolTile(
-                                        symbol: reels[col][row],
-                                        highlighted: highlightPayline && row == 1
-                                    )
-                                    .rotation3DEffect(
-                                        .degrees(isSpinning ? 360 : 0),
-                                        axis: (x: 1, y: 0, z: 0)
-                                    )
-                                    .animation(
-                                        isSpinning
-                                            ? .linear(duration: turbo ? 0.15 : 0.35).repeatCount(turbo ? 2 : 4, autoreverses: false)
-                                            : .easeOut(duration: 0.25),
-                                        value: isSpinning
-                                    )
-                                }
-                            }
-                        }
+                winBanner(compact: metrics.compact)
 
-                        VStack(spacing: 0) {
-                            Circle()
-                                .fill(AppTheme.goldGradient)
-                                .frame(width: 22, height: 22)
-                            Capsule()
-                                .fill(AppTheme.gold)
-                                .frame(width: 8, height: 72)
-                        }
-                        .padding(.leading, 4)
-                        .shadow(color: AppTheme.gold.opacity(0.4), radius: 4)
-                    }
-                    .padding(.horizontal, 14)
+                Text("RECENT: \(lastMessage)")
+                    .font(.system(size: metrics.compact ? 10 : 11, weight: .medium))
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .padding(.horizontal, 16)
+
+                if arena == .tournament {
+                    Text("TOURNAMENT SCORE: \(CoinFormat.string(store.tournamentScore))")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(AppTheme.purpleGlow)
                 }
-                .padding(.vertical, 14)
+
+                controls(spinSize: metrics.spinSize, compact: metrics.compact)
+                    .padding(.horizontal, 12)
+
+                Spacer(minLength: 0)
             }
-            .padding(.horizontal, 16)
-            .frame(height: 280)
-
-            winBanner
-
-            Text("RECENT: \(lastMessage)")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(AppTheme.textSecondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .padding(.horizontal, 16)
-
-            if arena == .tournament {
-                Text("TOURNAMENT SCORE: \(CoinFormat.string(store.tournamentScore))")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(AppTheme.purpleGlow)
-            }
-
-            controls
-                .padding(.horizontal, 16)
-
-            Spacer(minLength: 0)
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
         }
         .background(Color.clear)
         .toolbar {
@@ -132,6 +85,23 @@ struct SlotGameView: View {
         }
     }
 
+    private struct LayoutMetrics {
+        let spacing: CGFloat
+        let reelHeight: CGFloat
+        let spinSize: CGFloat
+        let compact: Bool
+
+        init(size: CGSize) {
+            let h = size.height
+            let w = size.width
+            compact = h < 720 || w < 380
+            spacing = compact ? 6 : 10
+            // Keep reels dominant but leave room for controls + spin on short screens.
+            reelHeight = min(compact ? 210 : 260, max(160, h * 0.34))
+            spinSize = min(compact ? 92 : 108, max(76, min(w * 0.24, h * 0.14)))
+        }
+    }
+
     private var jackpotStrip: some View {
         HStack(spacing: 4) {
             jackpotCell("GRAND", store.jackpotGrand, AppTheme.ruby)
@@ -159,18 +129,76 @@ struct SlotGameView: View {
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(color.opacity(0.5), lineWidth: 1))
     }
 
-    private var winBanner: some View {
+    private func reelBoard(height: CGFloat) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(AppTheme.panel)
+                .goldStroke(cornerRadius: 18, lineWidth: 2)
+
+            VStack(spacing: 8) {
+                if showBigWin {
+                    Text("BIG WIN")
+                        .font(.system(size: 22, weight: .black, design: .serif))
+                        .foregroundStyle(AppTheme.goldGradient)
+                        .shadow(color: AppTheme.gold.opacity(0.7), radius: 8)
+                        .transition(.scale.combined(with: .opacity))
+                }
+
+                HStack(spacing: 8) {
+                    ForEach(0..<spinColumns, id: \.self) { col in
+                        VStack(spacing: 6) {
+                            ForEach(0..<3, id: \.self) { row in
+                                SymbolTile(
+                                    symbol: reels[col][row],
+                                    highlighted: highlightPayline && row == 1
+                                )
+                                .rotation3DEffect(
+                                    .degrees(isSpinning ? 360 : 0),
+                                    axis: (x: 1, y: 0, z: 0)
+                                )
+                                .animation(
+                                    isSpinning
+                                        ? .linear(duration: turbo ? 0.15 : 0.35).repeatCount(turbo ? 2 : 4, autoreverses: false)
+                                        : .easeOut(duration: 0.25),
+                                    value: isSpinning
+                                )
+                            }
+                        }
+                    }
+
+                    VStack(spacing: 0) {
+                        Circle()
+                            .fill(AppTheme.goldGradient)
+                            .frame(width: 22, height: 22)
+                        Capsule()
+                            .fill(AppTheme.gold)
+                            .frame(width: 8, height: max(48, height * 0.28))
+                    }
+                    .padding(.leading, 4)
+                    .shadow(color: AppTheme.gold.opacity(0.4), radius: 4)
+                }
+                .padding(.horizontal, 14)
+            }
+            .padding(.vertical, 12)
+        }
+        .padding(.horizontal, 16)
+        .frame(height: height)
+    }
+
+    private func winBanner(compact: Bool) -> some View {
         VStack(spacing: 2) {
             Text("YOU WON")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(AppTheme.gold)
             Text(CoinFormat.string(lastWin))
-                .font(.system(size: 28, weight: .black, design: .rounded))
+                .font(.system(size: compact ? 22 : 28, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.goldGradient)
                 .shadow(color: AppTheme.gold.opacity(0.4), radius: 6)
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
+        .padding(.vertical, compact ? 6 : 10)
         .background(
             Capsule()
                 .fill(AppTheme.rubyDeep.opacity(0.85))
@@ -179,23 +207,12 @@ struct SlotGameView: View {
         .padding(.horizontal, 24)
     }
 
-    private var controls: some View {
-        VStack(spacing: 12) {
-            HStack(alignment: .center, spacing: 10) {
-                Button {
-                    // paytable hint
-                } label: {
-                    Image(systemName: "info.circle")
-                        .foregroundStyle(AppTheme.gold)
-                        .font(.system(size: 20))
-                }
-                .opacity(0.3)
-                .disabled(true)
-
+    private func controls(spinSize: CGFloat, compact: Bool) -> some View {
+        HStack(alignment: .center, spacing: compact ? 8 : 12) {
+            VStack(spacing: 8) {
                 betControl
-
-                VStack(spacing: 8) {
-                    miniAction("AUTO SPIN", icon: "arrow.triangle.2.circlepath") {
+                HStack(spacing: 8) {
+                    miniAction("AUTO", icon: "arrow.triangle.2.circlepath") {
                         autoSpin.toggle()
                     }
                     .opacity(autoSpin ? 1 : 0.85)
@@ -203,40 +220,40 @@ struct SlotGameView: View {
                         Capsule().stroke(autoSpin ? AppTheme.emerald : Color.clear, lineWidth: 2)
                     )
 
-                    miniAction("MAX BET", icon: "bitcoinsign.circle.fill") {
+                    miniAction("MAX", icon: "bitcoinsign.circle.fill") {
                         bet = min(arena.maxBet, store.coins)
                     }
                 }
-                .frame(width: 110)
             }
+            .frame(maxWidth: .infinity)
 
             Button {
                 Task { await spinOnce(fromHold: false) }
             } label: {
                 VStack(spacing: 2) {
                     Text("SPIN")
-                        .font(.system(size: 24, weight: .black, design: .serif))
+                        .font(.system(size: spinSize * 0.22, weight: .black, design: .serif))
                     Text(turbo ? "TURBO ON" : "HOLD FOR TURBO")
-                        .font(.system(size: 9, weight: .semibold))
+                        .font(.system(size: max(8, spinSize * 0.08), weight: .semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                 }
                 .foregroundStyle(AppTheme.goldLight)
-                .frame(width: 120, height: 120)
-                .background(
-                    Circle().fill(AppTheme.rubyGradient)
-                )
-                .overlay(
-                    Circle().stroke(AppTheme.gold, lineWidth: 4)
-                )
+                .frame(width: spinSize, height: spinSize)
+                .background(Circle().fill(AppTheme.rubyGradient))
+                .overlay(Circle().stroke(AppTheme.gold, lineWidth: 4))
                 .shadow(color: AppTheme.ruby.opacity(0.5), radius: 14)
             }
             .buttonStyle(.plain)
             .disabled(isSpinning || store.coins < bet)
+            .accessibilityLabel("Spin")
             .simultaneousGesture(
                 LongPressGesture(minimumDuration: 0.45).onEnded { _ in
                     turbo.toggle()
                 }
             )
         }
+        .padding(.vertical, 4)
     }
 
     private var betControl: some View {
