@@ -4,7 +4,7 @@ import SwiftUI
 struct KnockoutRoyale777App: App {
     @StateObject private var store = GameStore()
     @State private var showSplash = true
-    @State private var splashDuration = Double.random(in: 3.0...6.0)
+    @State private var splashDuration = Double.random(in: 3.0...5.0)
 
     var body: some Scene {
         WindowGroup {

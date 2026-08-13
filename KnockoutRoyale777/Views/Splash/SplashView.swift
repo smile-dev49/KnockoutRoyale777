@@ -72,14 +72,18 @@ struct SplashView: View {
                 Spacer()
 
                 VStack(spacing: 12) {
-                    ProgressView(value: progress)
-                        .tint(AppTheme.gold)
-                        .frame(width: 168)
+                    progressBar
+                        .frame(width: 220)
 
                     Text("ENTERING THE ARENA…")
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(AppTheme.textMuted)
                         .tracking(1.2)
+
+                    Text("\(Int((progress * 100).rounded()))%")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.goldLight)
+                        .monospacedDigit()
                 }
                 .padding(.bottom, 48)
                 .opacity(contentOpacity)
@@ -95,9 +99,30 @@ struct SplashView: View {
             withAnimation(.easeInOut(duration: 1.35).repeatForever(autoreverses: true)) {
                 glowPulse = true
             }
+            // Fill 0 → 100% over the splash lifetime (3–5s).
+            progress = 0
             withAnimation(.linear(duration: duration)) {
                 progress = 1
             }
         }
+    }
+
+    private var progressBar: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color.black.opacity(0.55))
+                    .overlay(
+                        Capsule()
+                            .stroke(AppTheme.gold.opacity(0.45), lineWidth: 1)
+                    )
+
+                Capsule()
+                    .fill(AppTheme.goldGradient)
+                    .frame(width: max(8, geo.size.width * progress))
+                    .shadow(color: AppTheme.gold.opacity(0.45), radius: 6)
+            }
+        }
+        .frame(height: 12)
     }
 }
