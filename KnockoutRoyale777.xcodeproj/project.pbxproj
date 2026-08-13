@@ -19,6 +19,7 @@
 		0F5DC5CF0314799F8A30FA1F /* RewardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570EFF3BCF8C63346C00A864 /* RewardsView.swift */; };
 		9FA6776BA07E8192DF842EA1 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C2B40DBD5CEEE644F618D4B /* ProfileView.swift */; };
 		B6623989558B6158784CBE52 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C142F184D5A8F4355A39E14 /* SettingsView.swift */; };
+		A1C3E8F204B17D9E6A5F2C81 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D4F0A13E26B5C79D1A4E02 /* SplashView.swift */; };
 		D4257A9A89BE3873E52E1EA6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7426147E03FB515EDD165B50 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 		570EFF3BCF8C63346C00A864 /* RewardsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsView.swift; sourceTree = "<group>"; };
 		6C2B40DBD5CEEE644F618D4B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		4C142F184D5A8F4355A39E14 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		C8D4F0A13E26B5C79D1A4E02 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		7426147E03FB515EDD165B50 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		27B6901068E0933C4C976089 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -120,6 +122,7 @@
 		12D60E529AE8D782FB8D4589 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				3B9E1A704C85D2F1A6E083B4 /* Splash */,
 				EEF5486B7837D92EBCB32FBD /* Home */,
 				D6DA90C261F8084B73F78756 /* Arena */,
 				41F9219FE485E521AA26910F /* Game */,
@@ -128,6 +131,14 @@
 				6FCA91D863637666BD317A1B /* Settings */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		3B9E1A704C85D2F1A6E083B4 /* Splash */ = {
+			isa = PBXGroup;
+			children = (
+				C8D4F0A13E26B5C79D1A4E02 /* SplashView.swift */,
+			);
+			path = Splash;
 			sourceTree = "<group>";
 		};
 		EEF5486B7837D92EBCB32FBD /* Home */ = {
@@ -260,6 +271,7 @@
 				0F5DC5CF0314799F8A30FA1F /* RewardsView.swift in Sources */,
 				9FA6776BA07E8192DF842EA1 /* ProfileView.swift in Sources */,
 				B6623989558B6158784CBE52 /* SettingsView.swift in Sources */,
+				A1C3E8F204B17D9E6A5F2C81 /* SplashView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
