@@ -5,7 +5,6 @@ import UIKit
 
 @MainActor
 final class GameStore: ObservableObject {
-    // MARK: - Player economy
     @Published var coins: Int
     @Published var displayName: String
     @Published var level: Int
@@ -13,42 +12,34 @@ final class GameStore: ObservableObject {
     @Published var xpToNext: Int
     @Published var isVIP: Bool
 
-    // MARK: - Stats
     @Published var totalSpins: Int
     @Published var biggestWin: Int
     @Published var currentStreakDays: Int
     @Published var lastPlayDayKey: String
 
-    // MARK: - Jackpots (virtual progressive)
     @Published var jackpotGrand: Int
     @Published var jackpotMajor: Int
     @Published var jackpotMinor: Int
     @Published var jackpotMini: Int
 
-    // MARK: - Daily login
-    @Published var loginDay: Int // 1...7 progress (next claimable day index 1-based claimed count)
+    @Published var loginDay: Int
     @Published var claimedLoginDays: Set<Int>
     @Published var lastLoginClaimDate: Date?
     @Published var dailyBonusAvailable: Bool
     @Published var lastDailyBonusDate: Date?
 
-    // MARK: - Missions
     @Published var missionProgress: [String: Int]
     @Published var claimedMissions: Set<String>
     @Published var missionDayKey: String
 
-    // MARK: - Achievements
     @Published var achievementProgress: [String: Int]
     @Published var unlockedAchievements: Set<String>
 
-    // MARK: - Collection counts
     @Published var collection: [String: Int]
 
-    // MARK: - Tournament (virtual score)
     @Published var tournamentScore: Int
     @Published var tournamentBest: Int
 
-    // MARK: - Preferences (Settings)
     @Published var hapticsEnabled: Bool
     @Published var defaultTurboEnabled: Bool
     @Published var confirmMaxBet: Bool
@@ -152,8 +143,6 @@ final class GameStore: ObservableObject {
         UIApplication.shared.isIdleTimerDisabled = keepScreenOn
     }
 
-    // MARK: - Daily timers
-
     var secondsUntilReset: Int {
         let cal = Calendar.current
         let now = Date()
@@ -202,8 +191,6 @@ final class GameStore: ObservableObject {
         }
         lastPlayDayKey = today
     }
-
-    // MARK: - Economy actions
 
     func canAfford(_ amount: Int) -> Bool { coins >= amount }
 
@@ -268,13 +255,10 @@ final class GameStore: ObservableObject {
         return mission.reward
     }
 
-    // MARK: - Spin
-
     func performSpin(bet: Int, arena: ArenaType) -> SpinResult? {
         refreshDailyState()
         guard spend(bet) else { return nil }
 
-        // Feed virtual jackpots a tiny bit each spin
         jackpotMini += max(1, bet / 500)
         jackpotMinor += max(1, bet / 200)
         jackpotMajor += max(1, bet / 80)
@@ -282,7 +266,6 @@ final class GameStore: ObservableObject {
 
         var result = engine.spin(bet: bet, arena: arena)
 
-        // Rare jackpot hits (virtual only)
         let roll = Int.random(in: 1...10_000)
         if roll == 1 {
             let hit = jackpotGrand
@@ -346,7 +329,7 @@ final class GameStore: ObservableObject {
             xp -= xpToNext
             level += 1
             xpToNext = 1_000 + (level - 1) * 750
-            credit(25_000) // level-up bonus virtual coins
+            credit(25_000)
         }
         bumpAchievement("level_10", to: level)
         bumpAchievement("champion", to: level)
@@ -386,7 +369,6 @@ final class GameStore: ObservableObject {
         persist()
     }
 
-    /// Clears local player progress only. Preferences in Settings are kept.
     func resetLocalProgress() {
         coins = Self.startingCoins
         level = 1
@@ -425,8 +407,6 @@ final class GameStore: ObservableObject {
         bumpMission(id: "login", by: 1)
         persist()
     }
-
-    // MARK: - Persistence
 
     func persist() {
         defaults.set(coins, forKey: keys.coins)
